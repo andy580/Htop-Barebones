@@ -156,7 +156,15 @@ int LinuxParser::RunningProcesses() {
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::Command(int pid) { 
+  string line, cmdline, filename = kProcDirectory + std::to_string(pid) + kCmdlineFilename;
+  std::ifstream filestream(filename);
+  std::getline(filestream, line);
+  std::istringstream linestream(line);
+  linestream >> line; 
+  cmdline += line;
+
+  return cmdline; }
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
