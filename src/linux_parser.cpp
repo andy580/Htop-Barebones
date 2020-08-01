@@ -174,11 +174,14 @@ string LinuxParser::Ram(int pid) {
     while(std::getline(filestream, line)){
       std::istringstream linestream(line);
       linestream >> key >> value; 
-      if (key == "VmSize:")
+      if (key == "VmSize:" && value != "")
         return std::to_string((stoi(value)/1024));
-    }
+      else if (key == "VmSize:")
+        return "0";
+    } 
   }
-  return string(); }
+return "0";
+}
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function

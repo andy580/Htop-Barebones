@@ -11,7 +11,7 @@ class Processor {
   // TODO: Declare any necessary private members
  private:
     float user, nice, system, idle, iowait, irq, softirq, steal, guest, guestNice, nonIdle, totalCpu; 
- std::string const filePath = LinuxParser::kProcDirectory + LinuxParser::kStatFilename;
+    std::string const filePath = LinuxParser::kProcDirectory + LinuxParser::kStatFilename;
 
 };
 
