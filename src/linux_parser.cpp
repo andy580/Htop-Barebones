@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include "linux_parser.h"
+#include "format.h"
 
 using std::stof;
 using std::string;
@@ -101,26 +102,23 @@ long LinuxParser::UpTime() {
   return activeTime; }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { 
-  string line, key, value, filename = kProcDirectory + kStatFilename;
-  vector<string> cpuVals;
-  std::ifstream filestream(filename);
-  if (filestream.is_open()){
-    std::getline(filestream, line);
-    std::istringstream linestream(line); 
-    linestream >> key; 
-    if (key == "cpu"){
-      for (int val = kUser_;  val != kGuestNice_+1; val++) {
-        linestream >> value; 
-        cpuVals.push_back(value);
-      }
-    return cpuVals;
-    }
-  }
-  
-
-
-  return {}; }
+// vector<string> LinuxParser::CpuUtilization() { 
+//   string line, key, value, filename = kProcDirectory + kStatFilename;
+//   vector<string> cpuVals;
+//   std::ifstream filestream(filename);
+//   if (filestream.is_open()){
+//     std::getline(filestream, line);
+//     std::istringstream linestream(line); 
+//     linestream >> key; 
+//     if (key == "cpu"){
+//       for (int val = kUser_;  val != kGuestNice_+1; val++) {
+//         linestream >> value; 
+//         cpuVals.push_back(value);
+//       }
+//     return cpuVals;
+//     }
+//   }
+  // return {}; }
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() { 
@@ -216,4 +214,55 @@ string LinuxParser::User(int pid) {
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
+long LinuxParser::UpTime(int pid) { 
+  std::string filePath = kProcDirectory + to_string(pid) + kStatFilename;
+  std::string line, tempValue;
+  long uptime; 
+  std::ifstream filestream(filePath);
+
+  if(!filestream.is_open()){
+    uptime = -99;
+  } else {
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    // Skip the first 21 inputs
+    for (int i=0; i<21; i++) {
+      linestream >> tempValue;
+    }
+    // Get the 22nd input
+    linestream >> tempValue;
+    uptime = stol(tempValue);
+    uptime /= sysconf(_SC_CLK_TCK);
+    uptime = LinuxParser::UpTime() - uptime;
+  }
+  return uptime; }
+
+  vector<string> LinuxParser::CpuUtilization(int pid) { 
+    std::string filePath = kProcDirectory + to_string(pid) + kStatFilename;
+    std::string line, tempValues, utime, stime, cutime, cstime, starttime;;
+    std::vector <string> cupid; // cupid == CPU ID values;
+    std::ifstream filestream(filePath);
+    if(!filestream.is_open()) {
+      std::string err = "No Values Found";
+      cupid.push_back(err);
+      return cupid;
+    } else {
+      std::getline(filestream, line);
+      std::istringstream linestream(line);
+      // skipping the first 13 inputs into linestream
+      for (int i=0; i<13; i++) {
+        linestream >> tempValues;
+      }
+      linestream >> utime >> stime >> cutime >> cstime;
+      cupid.push_back(utime);
+      cupid.push_back(stime);
+      cupid.push_back(cutime);
+      cupid.push_back(cstime);
+      // skipping values from 18 to 21 
+      for (int i=18; i<=21; i++) {
+        linestream >> tempValues;
+      }
+      linestream >> starttime;
+      cupid.push_back(starttime);
+    }
+  return cupid; }
